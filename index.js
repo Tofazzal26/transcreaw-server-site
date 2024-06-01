@@ -20,11 +20,25 @@ const client = new MongoClient(uri, {
   },
 });
 
+const UserRoleCollection = client.db("Transcreaw").collection("Users");
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    // Send a ping to confirm a successful connection
+
+    // user role define
+    app.post("/userRole", async (req, res) => {
+      const user = req.body;
+      const query = { email: user?.email };
+      const isExist = await UserRoleCollection.findOne(query);
+      if (isExist) {
+        return res.send({ message: "User Is Already Added" });
+      }
+      const result = await UserRoleCollection.insertOne(user);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
