@@ -74,6 +74,37 @@ async function run() {
       res.send(result);
     });
 
+    // user book details
+
+    app.get("/bookDetails/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await BookParcelCollection.findOne(query);
+      res.send(result);
+    });
+
+    // user book update
+    app.put("/bookParcelUpdate/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const book = req.body;
+      const updateBook = {
+        $set: {
+          phone: book.phone,
+          parcelType: book.parcelType,
+          parcelWeight: book.parcelWeight,
+          requestDate: book.requestDate,
+          receiverName: book.receiverName,
+          receiverPhone: book.receiverPhone,
+          parcelDeliveryAddress: book.parcelDeliveryAddress,
+          Latitude: book.Latitude,
+          Longitude: book.Longitude,
+        },
+      };
+      const result = await BookParcelCollection.updateOne(query, updateBook);
+      res.send(result);
+    });
+
     // user role define
     app.post("/userRole", async (req, res) => {
       const user = req.body;
