@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 4000;
@@ -57,11 +57,20 @@ async function run() {
       const result = await BookParcelCollection.insertOne(book);
       res.send(result);
     });
-
+    // get user book parcel data
     app.get("/bookParcel/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await BookParcelCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // user book parcel delete
+
+    app.delete("/bookParcel/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await BookParcelCollection.deleteOne(query);
       res.send(result);
     });
 
