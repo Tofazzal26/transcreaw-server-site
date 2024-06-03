@@ -90,15 +90,16 @@ async function run() {
       const book = req.body;
       const updateBook = {
         $set: {
-          phone: book.phone,
-          parcelType: book.parcelType,
-          parcelWeight: book.parcelWeight,
-          requestDate: book.requestDate,
-          receiverName: book.receiverName,
-          receiverPhone: book.receiverPhone,
-          parcelDeliveryAddress: book.parcelDeliveryAddress,
-          Latitude: book.Latitude,
-          Longitude: book.Longitude,
+          phone: book.phones,
+          parcelType: book.parcelTypes,
+          weightPrice: book.weightPrices,
+          parcelWeight: book.parcelWeights,
+          requestDate: book.requestDates,
+          receiverName: book.receiverNames,
+          receiverPhone: book.receiverPhones,
+          parcelDeliveryAddress: book.parcelDeliveryAddressNew,
+          Latitude: book.Latitudes,
+          Longitude: book.Longitudes,
         },
       };
       const result = await BookParcelCollection.updateOne(query, updateBook);
