@@ -29,10 +29,10 @@ const client = new MongoClient(uri, {
 });
 
 const UserRoleCollection = client.db("Transcreaw").collection("Users");
+const BookParcelCollection = client.db("Transcreaw").collection("BookParcel");
 
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
-  console.log("verify", token);
   if (!token) {
     return res.status(401).send({ message: "unauthorized access" });
   }
@@ -49,6 +49,21 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    // user parcel book
+
+    app.post("/bookParcel", async (req, res) => {
+      const book = req.body;
+      const result = await BookParcelCollection.insertOne(book);
+      res.send(result);
+    });
+
+    app.get("/bookParcel/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await BookParcelCollection.find(query).toArray();
+      res.send(result);
+    });
 
     // user role define
     app.post("/userRole", async (req, res) => {
@@ -70,12 +85,13 @@ async function run() {
       res.send({ role });
     });
 
+    // jwt token apply
+
     app.post("/jwt", async (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
         expiresIn: "356d",
       });
-      console.log("jwt", token);
       res
         .cookie("token", token, {
           httpOnly: true,
