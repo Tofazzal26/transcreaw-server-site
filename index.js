@@ -58,10 +58,23 @@ async function run() {
       res.send(result);
     });
     // get user book parcel data
-    app.get("/bookParcel/:email", verifyToken, async (req, res) => {
+    app.get("/bookParcel/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await BookParcelCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.patch("/totalBookCount/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const bookCount = req.body;
+      const update = {
+        $inc: {
+          TotalBookCount: +1,
+        },
+      };
+      const result = await UserRoleCollection.updateOne(query, update);
       res.send(result);
     });
 
@@ -122,6 +135,13 @@ async function run() {
       res.send(result);
     });
 
+    // all user get
+
+    app.get("/allUser", async (req, res) => {
+      const result = await UserRoleCollection.find().toArray();
+      res.send(result);
+    });
+
     app.patch("/userProfile/phoneUpdate/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -149,7 +169,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/Role/:email", verifyToken, async (req, res) => {
+    app.get("/Role/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await UserRoleCollection.findOne(query);
