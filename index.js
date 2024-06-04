@@ -79,6 +79,13 @@ async function run() {
     });
     // all delivery man data
 
+    app.get("/allDeliveryMan", async (req, res) => {
+      const result = await UserRoleCollection.find({
+        Role: "Delivery Man",
+      }).toArray();
+      res.send(result);
+    });
+
     // user book parcel cancel
 
     app.patch("/bookParcel/:id", async (req, res) => {
