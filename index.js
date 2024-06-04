@@ -77,13 +77,20 @@ async function run() {
       const result = await UserRoleCollection.updateOne(query, update);
       res.send(result);
     });
+    // all delivery man data
 
-    // user book parcel delete
+    // user book parcel cancel
 
-    app.delete("/bookParcel/:id", async (req, res) => {
+    app.patch("/bookParcel/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await BookParcelCollection.deleteOne(query);
+      const parcel = req.body;
+      const statusUpdate = {
+        $set: {
+          status: parcel.NewStatus,
+        },
+      };
+      const result = await BookParcelCollection.updateOne(query, statusUpdate);
       res.send(result);
     });
 
