@@ -106,6 +106,37 @@ async function run() {
       res.send(result);
     });
 
+    // find all user parcel
+
+    app.get("/allUserParcel", async (req, res) => {
+      const result = await BookParcelCollection.find().toArray();
+      res.send(result);
+    });
+
+    // user profile update and get
+
+    app.get("/userProfile/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await UserRoleCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/userProfile/phoneUpdate/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const phones = req.body;
+      const updateDoc = {
+        $set: {
+          phone: phones.phone,
+          photo: phones.photo,
+          name: phones.name,
+        },
+      };
+      const result = await UserRoleCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // user role define
     app.post("/userRole", async (req, res) => {
       const user = req.body;
