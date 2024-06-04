@@ -86,6 +86,36 @@ async function run() {
       res.send(result);
     });
 
+    // user Role Update on Admin DashBoard
+
+    app.patch("/userRoleUpdateAdmin/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const NewRole = req.body;
+      const RoleUpdate = {
+        $set: {
+          Role: NewRole.changeRole,
+        },
+      };
+      const result = await UserRoleCollection.updateOne(query, RoleUpdate);
+      res.send(result);
+    });
+
+    // user Role Update on Deliverymen DashBoard
+
+    app.patch("/userRoleUpdateDelivery/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const NewRole = req.body;
+      const RoleUpdate = {
+        $set: {
+          Role: NewRole.Delivery,
+        },
+      };
+      const result = await UserRoleCollection.updateOne(query, RoleUpdate);
+      res.send(result);
+    });
+
     // user book parcel cancel
 
     app.patch("/bookParcel/:id", async (req, res) => {
