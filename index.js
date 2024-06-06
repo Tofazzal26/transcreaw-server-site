@@ -140,6 +140,21 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/manageAllParcel/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const manage = req.body;
+      const update = {
+        $set: {
+          ApproximateDate: manage.NewApproximateDate,
+          DeliveryMenID: manage.NewDeliveryMenID,
+          status: manage.NewStatus,
+        },
+      };
+      const result = await BookParcelCollection.updateOne(query, update);
+      res.send(result);
+    });
+
     // user book update
     app.put("/bookParcelUpdate/:id", async (req, res) => {
       const id = req.params.id;
@@ -166,7 +181,21 @@ async function run() {
     // find all user parcel
 
     app.get("/allUserParcel", async (req, res) => {
-      const result = await BookParcelCollection.find().toArray();
+      const from = req.query?.from;
+      const to = req.query?.to;
+      console.log(from, "from");
+      console.log(to, "to");
+      let query = {};
+      console.log(query);
+      if (from && to) {
+        query = {
+          requestDate: {
+            $gte: from,
+            $lte: to,
+          },
+        };
+      }
+      const result = await BookParcelCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -217,7 +246,7 @@ async function run() {
       const email = req.params.email;
       const query = { email: email };
       const result = await UserRoleCollection.findOne(query);
-      const role = result.Role;
+      const role = result?.Role;
       res.send({ role });
     });
 
