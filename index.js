@@ -101,6 +101,18 @@ async function run() {
       res.send(result);
     });
 
+    // delivery man assign data
+
+    app.get("/assignDelivery/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await UserRoleCollection.findOne(query);
+      const stringId = new ObjectId(user?._id).toString();
+      const exist = { DeliveryMenID: stringId };
+      const Delivery = await BookParcelCollection.find(exist).toArray();
+      res.send(Delivery);
+    });
+
     // user Role Update on Deliverymen DashBoard
 
     app.patch("/userRoleUpdateDelivery/:id", async (req, res) => {
