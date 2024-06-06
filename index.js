@@ -128,6 +128,21 @@ async function run() {
       res.send(result);
     });
 
+    // delivery man was Delivered
+
+    app.patch("/deliveryManDelivered/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const delivery = req.body;
+      const updateDoc = {
+        $set: {
+          status: delivery.Delivery,
+        },
+      };
+      const result = await BookParcelCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // user Role Update on Deliverymen DashBoard
 
     app.patch("/userRoleUpdateDelivery/:id", async (req, res) => {
