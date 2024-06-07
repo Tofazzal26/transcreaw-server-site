@@ -29,6 +29,9 @@ const client = new MongoClient(uri, {
 });
 
 const UserRoleCollection = client.db("Transcreaw").collection("Users");
+const ReviewDeliverymanCollection = client
+  .db("Transcreaw")
+  .collection("Reviews");
 const BookParcelCollection = client.db("Transcreaw").collection("BookParcel");
 
 const verifyToken = async (req, res, next) => {
@@ -93,6 +96,13 @@ async function run() {
       res.send(result);
     });
 
+    // all booking by date statics
+
+    app.get("/allStatisticsDate", async (req, res) => {
+      const result = await BookParcelCollection.find().toArray();
+      res.send(result);
+    });
+
     // all delivery man data
 
     app.get("/allDeliveryMan", async (req, res) => {
@@ -142,6 +152,40 @@ async function run() {
       };
       const result = await BookParcelCollection.updateOne(query, updateDoc);
       res.send(result);
+    });
+
+    // review the delivery man
+
+    app.post("/reviewDeliveryMan", async (req, res) => {
+      const review = req.body;
+      const result = await ReviewDeliverymanCollection.insertOne(review);
+      res.send(result);
+    });
+
+    // deliveryman review get method
+
+    app.get("/deliveryManReview/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await UserRoleCollection.findOne(query);
+      const stringId = new ObjectId(user?._id).toString();
+      const exist = { ManID: stringId };
+      const result = await ReviewDeliverymanCollection.find(exist).toArray();
+      res.send(result);
+    });
+
+    // delivery man average count
+
+    app.get("/deliverymanAverageReview", async (req, res) => {
+      const averageReviews = await ReviewDeliverymanCollection.aggregate([
+        {
+          $group: {
+            _id: "$ManID",
+            averageReview: { $avg: "$rating" },
+          },
+        },
+      ]).toArray();
+      res.send(averageReviews);
     });
 
     // delivery man was Delivered
