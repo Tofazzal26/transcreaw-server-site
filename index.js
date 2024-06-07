@@ -29,6 +29,7 @@ const client = new MongoClient(uri, {
 });
 
 const UserRoleCollection = client.db("Transcreaw").collection("Users");
+const TotalDelivery = client.db("Transcreaw").collection("Delivery");
 const ReviewDeliverymanCollection = client
   .db("Transcreaw")
   .collection("Reviews");
@@ -96,6 +97,14 @@ async function run() {
       res.send(result);
     });
 
+    // total delivery count
+
+    app.post("/totalDelivery", async (req, res) => {
+      const count = req.body;
+      const result = await TotalDelivery.insertOne(count);
+      res.send(result);
+    });
+
     // all booking by date statics
 
     app.get("/allStatisticsDate", async (req, res) => {
@@ -158,8 +167,22 @@ async function run() {
 
     app.post("/reviewDeliveryMan", async (req, res) => {
       const review = req.body;
+      // const query = { ReviewEmail: review?.ReviewEmail };
+      // const exist = await ReviewDeliverymanCollection.findOne(query);
+      // if (exist) {
+      //   return res.send({ message: "You Already Add Review" });
+      // }
       const result = await ReviewDeliverymanCollection.insertOne(review);
       res.send(result);
+    });
+
+    // our feature section count data
+
+    app.get("/featureAllData", async (req, res) => {
+      const totalParcel = await BookParcelCollection.estimatedDocumentCount();
+      const totalUser = await UserRoleCollection.estimatedDocumentCount();
+      const totalDelivery = await TotalDelivery.estimatedDocumentCount();
+      res.send({ totalParcel, totalUser, totalDelivery });
     });
 
     // deliveryman review get method
