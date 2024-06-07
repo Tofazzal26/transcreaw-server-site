@@ -77,6 +77,22 @@ async function run() {
       const result = await UserRoleCollection.updateOne(query, update);
       res.send(result);
     });
+
+    // total delivery count
+
+    app.patch("/totalDelivery/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const bookCount = req.body;
+      const update = {
+        $inc: {
+          TotalDelivery: +1,
+        },
+      };
+      const result = await UserRoleCollection.updateOne(query, update);
+      res.send(result);
+    });
+
     // all delivery man data
 
     app.get("/allDeliveryMan", async (req, res) => {
@@ -225,10 +241,7 @@ async function run() {
     app.get("/allUserParcel", async (req, res) => {
       const from = req.query?.from;
       const to = req.query?.to;
-      console.log(from, "from");
-      console.log(to, "to");
       let query = {};
-      console.log(query);
       if (from && to) {
         query = {
           requestDate: {
