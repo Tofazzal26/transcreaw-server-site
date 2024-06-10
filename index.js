@@ -2,20 +2,31 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-const port = process.env.PORT || 4000;
 require("dotenv").config();
+const port = process.env.PORT || 4000;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "https://transcreaw.web.app",
+      "https://transcreaw.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
 app.use(express.json());
-app.use(cookieParser());
+// const corsConfig = {
+//   origin: "*",
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+// };
+// app.use(cors(corsConfig));
+// app.options("", cors(corsConfig));
+// app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.rgxjhma.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -35,10 +46,16 @@ const ReviewDeliverymanCollection = client
   .collection("Reviews");
 const BookParcelCollection = client.db("Transcreaw").collection("BookParcel");
 
+const cookOption = {
+  httpOnly: true,
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+  secure: process.env.NODE_ENV === "production" ? true : false,
+};
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     // user parcel book
 
@@ -454,20 +471,6 @@ async function run() {
 
     // jwt token apply
 
-    // app.post("/jwt", async (req, res) => {
-    //   const user = req.body;
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
-    //     expiresIn: "356d",
-    //   });
-    //   res
-    //     .cookie("token", token, {
-    //       httpOnly: true,
-    //       secure: process.env.NODE_ENV === "production",
-    //       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-    //     })
-    //     .send({ success: true });
-    // });
-
     app.post("/jwt", async (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
@@ -476,19 +479,7 @@ async function run() {
       res.send({ token });
     });
 
-    app.post("/logout", async (req, res) => {
-      const user = req.body;
-      res
-        .clearCookie("token", {
-          sameSite: "strict",
-          httpOnly: true,
-          secure: false,
-          maxAge: 0,
-        })
-        .send({ success: true });
-    });
-
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
