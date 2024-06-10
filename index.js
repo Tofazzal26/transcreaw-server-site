@@ -57,29 +57,32 @@ async function run() {
 
     // user parcel book
 
+    const verifyToken = (req, res, next) => {
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: "Forbidden Access" });
+      }
+      const token = req.headers.authorization.split(" ")[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN, (error, decoded) => {
+        if (error) {
+          return res.status(401).send({ message: "Forbidden Access" });
+        }
+        req.decoded = decoded;
+        next();
+      });
+    };
+
     // delivery man verify
 
-    const DeliverymanVerify = async (req, res, next) => {
-      const email = req.query.email;
+    const AdminVerify = async (req, res, next) => {
+      const email = req.decoded.email;
       const query = { email: email };
-      const user = await UserRoleCollection.findOne(query);
-      const delivery = user?.role === "Delivery Man";
-      if (!delivery) {
+      const user = await UsersCollection.findOne(query);
+      const admin = user?.role === "Admin";
+      if (!admin) {
         return res.status(403).send({ message: "Forbidden Access" });
       }
       next();
     };
-
-    // const AdminVerify = async (req, res, next) => {
-    //   const email = req.decoded.email;
-    //   const query = { email: email };
-    //   const user = await UsersCollection.findOne(query);
-    //   const admin = user?.role === "Admin";
-    //   if (!admin) {
-    //     return res.status(403).send({ message: "Forbidden Access" });
-    //   }
-    //   next();
-    // };
 
     app.post("/bookParcel", async (req, res) => {
       const book = req.body;
