@@ -35,21 +35,6 @@ const ReviewDeliverymanCollection = client
   .collection("Reviews");
 const BookParcelCollection = client.db("Transcreaw").collection("BookParcel");
 
-const verifyToken = async (req, res, next) => {
-  const token = req.cookies?.token;
-  console.log(token);
-  if (!token) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
-    if (err) {
-      return res.status(401).send({ message: "unauthorized access" });
-    }
-    req.user = decoded;
-    next();
-  });
-};
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -59,12 +44,13 @@ async function run() {
 
     const verifyToken = (req, res, next) => {
       if (!req.headers.authorization) {
-        return res.status(401).send({ message: "Forbidden Access" });
+        return res.status(401).send({ message: "Forbidden Access 1" });
       }
       const token = req.headers.authorization.split(" ")[1];
       jwt.verify(token, process.env.ACCESS_TOKEN, (error, decoded) => {
         if (error) {
-          return res.status(401).send({ message: "Forbidden Access" });
+          console.log(error);
+          return res.status(401).send({ message: "Forbidden Access 2" });
         }
         req.decoded = decoded;
         next();
@@ -76,10 +62,23 @@ async function run() {
     const AdminVerify = async (req, res, next) => {
       const email = req.decoded.email;
       const query = { email: email };
-      const user = await UsersCollection.findOne(query);
-      const admin = user?.role === "Admin";
+      const user = await UserRoleCollection.findOne(query);
+      const admin = user?.Role === "Admin";
       if (!admin) {
-        return res.status(403).send({ message: "Forbidden Access" });
+        return res.status(403).send({ message: "Forbidden Access " });
+      }
+      next();
+    };
+
+    // delivery man secure
+
+    const DeliverymanVerify = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await UserRoleCollection.findOne(query);
+      const admin = user?.Role === "Delivery Man";
+      if (!admin) {
+        return res.status(403).send({ message: "Forbidden Access " });
       }
       next();
     };
@@ -149,10 +148,15 @@ async function run() {
 
     // all booking by date statics
 
-    app.get("/allStatisticsDate", async (req, res) => {
-      const result = await BookParcelCollection.find().toArray();
-      res.send(result);
-    });
+    app.get(
+      "/allStatisticsDate",
+      verifyToken,
+      AdminVerify,
+      async (req, res) => {
+        const result = await BookParcelCollection.find().toArray();
+        res.send(result);
+      }
+    );
 
     // all delivery man data
 
@@ -180,15 +184,20 @@ async function run() {
 
     // delivery man assign data
 
-    app.get("/assignDelivery/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const user = await UserRoleCollection.findOne(query);
-      const stringId = new ObjectId(user?._id).toString();
-      const exist = { DeliveryMenID: stringId };
-      const Delivery = await BookParcelCollection.find(exist).toArray();
-      res.send(Delivery);
-    });
+    app.get(
+      "/assignDelivery/:email",
+      verifyToken,
+      DeliverymanVerify,
+      async (req, res) => {
+        const email = req.params.email;
+        const query = { email: email };
+        const user = await UserRoleCollection.findOne(query);
+        const stringId = new ObjectId(user?._id).toString();
+        const exist = { DeliveryMenID: stringId };
+        const Delivery = await BookParcelCollection.find(exist).toArray();
+        res.send(Delivery);
+      }
+    );
 
     // payment one only
 
@@ -238,15 +247,20 @@ async function run() {
 
     // deliveryman review get method
 
-    app.get("/deliveryManReview/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const user = await UserRoleCollection.findOne(query);
-      const stringId = new ObjectId(user?._id).toString();
-      const exist = { ManID: stringId };
-      const result = await ReviewDeliverymanCollection.find(exist).toArray();
-      res.send(result);
-    });
+    app.get(
+      "/deliveryManReview/:email",
+      verifyToken,
+      DeliverymanVerify,
+      async (req, res) => {
+        const email = req.params.email;
+        const query = { email: email };
+        const user = await UserRoleCollection.findOne(query);
+        const stringId = new ObjectId(user?._id).toString();
+        const exist = { ManID: stringId };
+        const result = await ReviewDeliverymanCollection.find(exist).toArray();
+        res.send(result);
+      }
+    );
 
     // delivery man average count
 
@@ -356,7 +370,7 @@ async function run() {
 
     // find all user parcel
 
-    app.get("/allUserParcel", async (req, res) => {
+    app.get("/allUserParcel", verifyToken, AdminVerify, async (req, res) => {
       const from = req.query?.from;
       const to = req.query?.to;
       let query = {};
@@ -383,7 +397,7 @@ async function run() {
 
     // all user get
 
-    app.get("/allUser", async (req, res) => {
+    app.get("/allUser", verifyToken, AdminVerify, async (req, res) => {
       const result = await UserRoleCollection.find().toArray();
       res.send(result);
     });
